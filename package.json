@@ -1,0 +1,322 @@
+{
+  "name": "reqflow",
+  "displayName": "ReqFlow: Simple API Tester",
+  "description": "Test APIs in VS Code. Simple, local, fast.",
+  "version": "0.3.0",
+  "publisher": "reqflow",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/YOUR_USER/reqflow.git"
+  },
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Testing",
+    "Other"
+  ],
+  "keywords": [
+    "api",
+    "rest",
+    "http",
+    "curl",
+    "postman"
+  ],
+  "activationEvents": [],
+  "main": "./out/extension.js",
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "reqflow",
+          "title": "ReqFlow",
+          "icon": "media/icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "reqflow": [
+        {
+          "id": "reqflow.collections",
+          "name": "Collections"
+        },
+        {
+          "id": "reqflow.history",
+          "name": "History"
+        },
+        {
+          "id": "reqflow.environments",
+          "name": "Environments"
+        }
+      ]
+    },
+    "viewsWelcome": [
+      {
+        "view": "reqflow.collections",
+        "contents": "No requests yet.\n[New Request](command:reqflow.newRequest)\n[Import from cURL](command:reqflow.importCurl)"
+      }
+    ],
+    "commands": [
+      {
+        "command": "reqflow.newRequest",
+        "title": "New Request",
+        "icon": "$(add)"
+      },
+      {
+        "command": "reqflow.openPanel",
+        "title": "Open ReqFlow",
+        "category": "ReqFlow"
+      },
+      {
+        "command": "reqflow.send",
+        "title": "Send Request",
+        "category": "ReqFlow"
+      },
+      {
+        "command": "reqflow.saveRequest",
+        "title": "Save Request",
+        "category": "ReqFlow"
+      },
+      {
+        "command": "reqflow.renameRequest",
+        "title": "Rename Request",
+        "category": "ReqFlow"
+      },
+      {
+        "command": "reqflow.newCollection",
+        "title": "New Collection",
+        "icon": "$(new-folder)",
+        "category": "ReqFlow"
+      },
+      {
+        "command": "reqflow.newFolder",
+        "title": "New Folder",
+        "category": "ReqFlow"
+      },
+      {
+        "command": "reqflow.renameNode",
+        "title": "Rename",
+        "category": "ReqFlow"
+      },
+      {
+        "command": "reqflow.deleteNode",
+        "title": "Delete",
+        "category": "ReqFlow"
+      },
+      {
+        "command": "reqflow.duplicateRequest",
+        "title": "Duplicate",
+        "category": "ReqFlow"
+      },
+      {
+        "command": "reqflow.clearHistory",
+        "title": "Clear History",
+        "category": "ReqFlow"
+      },
+      {
+        "command": "reqflow.selectEnvironment",
+        "title": "Select Environment",
+        "category": "ReqFlow"
+      },
+      {
+        "command": "reqflow.manageEnvironments",
+        "title": "Edit Environment Variables",
+        "category": "ReqFlow"
+      },
+      {
+        "command": "reqflow.openRequestPinned",
+        "title": "Open Request (Pinned Tab)",
+        "category": "ReqFlow"
+      },
+      {
+        "command": "reqflow.openHistoryEntry",
+        "title": "Open History Entry",
+        "category": "ReqFlow"
+      },
+      {
+        "command": "reqflow.cancelRequest",
+        "title": "Cancel Request",
+        "category": "ReqFlow"
+      },
+      {
+        "command": "reqflow.focusUrl",
+        "title": "Focus URL Bar",
+        "category": "ReqFlow"
+      },
+      {
+        "command": "reqflow.copyCurl",
+        "title": "Copy as cURL",
+        "category": "ReqFlow"
+      },
+      {
+        "command": "reqflow.importCurl",
+        "title": "Import from cURL",
+        "icon": "$(cloud-download)",
+        "category": "ReqFlow"
+      },
+      {
+        "command": "reqflow.setActiveEnvironment",
+        "title": "Set Active Environment",
+        "category": "ReqFlow"
+      },
+      {
+        "command": "reqflow.newEnvironment",
+        "title": "New Environment",
+        "category": "ReqFlow"
+      },
+      {
+        "command": "reqflow.editEnvironment",
+        "title": "Edit Environment",
+        "category": "ReqFlow"
+      },
+      {
+        "command": "reqflow.revealStorage",
+        "title": "Reveal Storage Folder",
+        "category": "ReqFlow"
+      }
+    ],
+    "menus": {
+      "editor/title": [
+        {
+          "command": "reqflow.newRequest",
+          "when": "activeWebviewPanelId == 'reqflow.request'",
+          "group": "navigation"
+        }
+      ],
+      "view/title": [
+        {
+          "command": "reqflow.newRequest",
+          "when": "view == reqflow.collections",
+          "group": "navigation"
+        },
+        {
+          "command": "reqflow.newCollection",
+          "when": "view == reqflow.collections",
+          "group": "1_actions"
+        },
+        {
+          "command": "reqflow.importCurl",
+          "when": "view == reqflow.collections",
+          "group": "1_actions"
+        },
+        {
+          "command": "reqflow.clearHistory",
+          "when": "view == reqflow.history",
+          "group": "navigation"
+        },
+        {
+          "command": "reqflow.newEnvironment",
+          "when": "view == reqflow.environments",
+          "group": "navigation"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "reqflow.newFolder",
+          "when": "view == reqflow.collections && (viewItem == collection || viewItem == folder)",
+          "group": "inline"
+        },
+        {
+          "command": "reqflow.newRequest",
+          "when": "view == reqflow.collections && (viewItem == collection || viewItem == folder)",
+          "group": "1_reqflow"
+        },
+        {
+          "command": "reqflow.duplicateRequest",
+          "when": "view == reqflow.collections && viewItem == request",
+          "group": "1_reqflow"
+        },
+        {
+          "command": "reqflow.copyCurl",
+          "when": "view == reqflow.collections && viewItem == request",
+          "group": "1_reqflow"
+        },
+        {
+          "command": "reqflow.openRequestPinned",
+          "when": "view == reqflow.collections && viewItem == request",
+          "group": "1_reqflow"
+        },
+        {
+          "command": "reqflow.renameNode",
+          "when": "view == reqflow.collections",
+          "group": "2_reqflow"
+        },
+        {
+          "command": "reqflow.deleteNode",
+          "when": "view == reqflow.collections",
+          "group": "2_reqflow"
+        },
+        {
+          "command": "reqflow.editEnvironment",
+          "when": "view == reqflow.environments && viewItem == environment",
+          "group": "1_reqflow"
+        },
+        {
+          "command": "reqflow.setActiveEnvironment",
+          "when": "view == reqflow.environments && viewItem == environment",
+          "group": "1_reqflow"
+        }
+      ]
+    },
+    "keybindings": [
+      {
+        "command": "reqflow.newRequest",
+        "key": "ctrl+alt+n",
+        "mac": "cmd+alt+n"
+      },
+      {
+        "command": "reqflow.send",
+        "key": "ctrl+enter",
+        "mac": "cmd+enter",
+        "when": "activeWebviewPanelId == reqflow.request"
+      },
+      {
+        "command": "reqflow.saveRequest",
+        "key": "ctrl+s",
+        "mac": "cmd+s",
+        "when": "activeWebviewPanelId == reqflow.request"
+      },
+      {
+        "command": "reqflow.renameRequest",
+        "key": "f2",
+        "when": "activeWebviewPanelId == reqflow.request"
+      },
+      {
+        "command": "reqflow.cancelRequest",
+        "key": "escape",
+        "when": "activeWebviewPanelId == reqflow.request"
+      },
+      {
+        "command": "reqflow.focusUrl",
+        "key": "ctrl+l",
+        "mac": "cmd+l",
+        "when": "activeWebviewPanelId == reqflow.request"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "node esbuild.mjs",
+    "watch": "node esbuild.mjs --watch",
+    "lint": "tsc --noEmit",
+    "vsix": "vsce package --no-dependencies",
+    "package": "npm run vsix"
+  },
+  "dependencies": {
+    "@codemirror/autocomplete": "^6.18.6",
+    "@codemirror/commands": "^6.8.1",
+    "@codemirror/lang-json": "^6.0.1",
+    "@codemirror/language": "^6.11.0",
+    "@codemirror/lint": "^6.8.4",
+    "@codemirror/state": "^6.5.2",
+    "@codemirror/view": "^6.36.5",
+    "@lezer/highlight": "^1.2.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "@types/vscode": "^1.85.0",
+    "@vscode/vsce": "^4.1.0",
+    "esbuild": "^0.24.0",
+    "typescript": "^5.7.0"
+  }
+}
