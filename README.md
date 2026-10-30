@@ -4,8 +4,6 @@
 
 ReqFlow is a lightweight HTTP client extension: build requests in a native-feeling panel, inspect responses, organize saved requests in collections, and switch environments without leaving the editor. Everything stays on your machine in VS Code global storage — no accounts, no cloud sync, no telemetry.
 
-![ReqFlow logo](media/logo.svg)
-
 ## Features
 
 ### Request builder

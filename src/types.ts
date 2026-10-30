@@ -86,6 +86,7 @@ export type OutboundRequest = {
 
 export type WebviewToHostMessage =
   | { type: "ready" }
+  | { type: "newRequest" }
   | { type: "send"; request: ApiRequest }
   | { type: "saveRequest"; request: ApiRequest }
   | { type: "saveDraft"; request: Partial<ApiRequest> }

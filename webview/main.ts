@@ -111,6 +111,7 @@ function ensureRows(rows: KeyValue[]): KeyValue[] {
 function mountShell(): void {
   app.innerHTML = `
     <div class="app-top-bar">
+      <button type="button" class="btn btn-ghost btn-sm" id="new-request" aria-label="New request" title="New request">+</button>
       <span class="unsaved-dot hidden" id="unsaved-dot" title="Unsaved changes" aria-hidden="true"></span>
       <button type="button" class="btn btn-ghost btn-sm" id="save">Save</button>
     </div>
@@ -202,6 +203,9 @@ function syncParamsFromUrl(url: string): void {
 }
 
 function bindShellEvents(): void {
+  document.getElementById("new-request")?.addEventListener("click", () => {
+    post({ type: "newRequest" });
+  });
   document.getElementById("send")!.addEventListener("click", () => void doSend());
   document.getElementById("cancel")!.addEventListener("click", () => {
     post({ type: "cancel" });

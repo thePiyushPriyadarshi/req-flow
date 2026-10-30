@@ -284,6 +284,9 @@ export class RequestPanel {
       case "ready":
         this.pushInit();
         break;
+      case "newRequest":
+        void vscode.commands.executeCommand("reqflow.newRequest");
+        break;
       case "saveDraft":
         this.mergeDraft(msg.request);
         this.dirty = true;

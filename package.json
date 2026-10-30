@@ -182,13 +182,6 @@
       }
     ],
     "menus": {
-      "editor/title": [
-        {
-          "command": "reqflow.newRequest",
-          "when": "activeWebviewPanelId == 'reqflow.request'",
-          "group": "navigation"
-        }
-      ],
       "view/title": [
         {
           "command": "reqflow.newRequest",
