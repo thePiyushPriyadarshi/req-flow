@@ -1,13 +1,19 @@
 {
   "name": "reqflow",
   "displayName": "ReqFlow: Simple API Tester",
-  "description": "Test APIs in VS Code. Simple, local, fast.",
+  "description": "Lightweight REST client in VS Code: collections, environments, history, cURL import — local storage, no account.",
   "version": "0.3.0",
   "publisher": "reqflow",
+  "license": "MIT",
+  "icon": "media/icon.svg",
   "repository": {
     "type": "git",
-    "url": "https://github.com/YOUR_USER/reqflow.git"
+    "url": "https://github.com/thePiyushPriyadarshi/req-flow.git"
   },
+  "bugs": {
+    "url": "https://github.com/thePiyushPriyadarshi/req-flow/issues"
+  },
+  "homepage": "https://github.com/thePiyushPriyadarshi/req-flow#readme",
   "engines": {
     "vscode": "^1.85.0"
   },
@@ -300,7 +306,8 @@
     "watch": "node esbuild.mjs --watch",
     "lint": "tsc --noEmit",
     "vsix": "vsce package --no-dependencies",
-    "package": "npm run vsix"
+    "package": "npm run vsix",
+    "publish": "vsce publish --no-dependencies"
   },
   "dependencies": {
     "@codemirror/autocomplete": "^6.18.6",
