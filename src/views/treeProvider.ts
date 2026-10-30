@@ -77,6 +77,8 @@ export class CollectionsTreeProvider
     if (node.type === "request" && node.request) {
       const req = node.request;
       item.label = `${formatMethodBadge(req.method)}${requestDisplayName(req)}`;
+      item.description = req.url.split(/[?#]/, 1)[0];
+      item.tooltip = `${req.method} ${req.url}`;
       item.iconPath = new vscode.ThemeIcon("circle-filled", methodThemeColor(req.method));
       item.contextValue = "request";
       item.command = {

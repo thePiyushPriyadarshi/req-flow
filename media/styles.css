@@ -84,14 +84,60 @@ body {
 .app-top-bar {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
-  gap: var(--rf-space-2);
-  min-height: 22px;
+  justify-content: space-between;
+  gap: var(--rf-space-3);
+  min-height: var(--rf-control-h);
   flex-shrink: 0;
 }
 
-.app-top-bar .unsaved-dot {
-  margin-inline-end: calc(var(--rf-space-1) * -1);
+.request-context,
+.app-top-bar-actions {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  gap: var(--rf-space-2);
+}
+
+.request-context-name {
+  overflow: hidden;
+  max-width: min(34vw, 22rem);
+  color: var(--rf-fg);
+  font-size: var(--rf-text-md);
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.request-context-method {
+  flex: 0 0 auto;
+  color: var(--rf-muted);
+  font-family: var(--rf-mono);
+  font-size: 0.6875rem;
+  font-weight: 700;
+}
+
+.request-context-method.method-GET { color: var(--rf-method-get); }
+.request-context-method.method-POST { color: var(--rf-method-post); }
+.request-context-method.method-PUT { color: var(--rf-method-put); }
+.request-context-method.method-PATCH { color: var(--rf-method-patch); }
+.request-context-method.method-DELETE { color: var(--rf-method-delete); }
+
+.new-request-btn {
+  width: 26px;
+  min-width: 26px;
+  padding: 0;
+  border: 1px solid var(--rf-border);
+  color: var(--rf-fg);
+  font-size: 1rem;
+}
+
+.app-top-bar-actions {
+  flex: 0 0 auto;
+}
+
+.unsaved-label {
+  color: var(--rf-status-4xx);
+  font-size: var(--rf-text-sm);
 }
 
 .app-top-bar #save {
@@ -406,8 +452,9 @@ body {
 .split-handle {
   flex: 0 0 5px;
   cursor: row-resize;
-  background: transparent;
+  background: color-mix(in srgb, var(--rf-border) 35%, transparent);
   border-block: 1px solid var(--rf-border);
+  transition: background-color 120ms ease-out;
 }
 
 .split-handle:hover,
@@ -935,13 +982,31 @@ body {
 
 .empty-response {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: var(--rf-space-2);
   min-height: 8rem;
   padding: var(--rf-space-5);
   text-align: center;
   color: var(--rf-muted);
   font-size: var(--rf-text-md);
+}
+
+.empty-response strong {
+  color: var(--rf-fg);
+  font-weight: 600;
+}
+
+.empty-response-mark {
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border: 1px solid var(--rf-border);
+  border-radius: 50%;
+  color: var(--rf-muted);
+  font-size: 1.1rem;
 }
 
 .loading-state {
@@ -1033,8 +1098,21 @@ body {
   margin-inline-start: auto;
 }
 
+.env-intro {
+  max-width: 52rem;
+  margin: var(--rf-space-3) 0 var(--rf-space-5);
+}
+
+.env-save-status {
+  color: var(--rf-status-2xx);
+}
+
 /* Narrow panels */
 @media (max-width: 520px) {
+  .request-context-name {
+    max-width: 42vw;
+  }
+
   .response-headers-table th:first-child {
     width: 42%;
   }

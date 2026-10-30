@@ -111,9 +111,15 @@ function ensureRows(rows: KeyValue[]): KeyValue[] {
 function mountShell(): void {
   app.innerHTML = `
     <div class="app-top-bar">
-      <button type="button" class="btn btn-ghost btn-sm" id="new-request" aria-label="New request" title="New request">+</button>
-      <span class="unsaved-dot hidden" id="unsaved-dot" title="Unsaved changes" aria-hidden="true"></span>
-      <button type="button" class="btn btn-ghost btn-sm" id="save">Save</button>
+      <div class="request-context">
+        <span class="request-context-method" id="request-context-method" aria-hidden="true"></span>
+        <span class="request-context-name" id="request-context-name"></span>
+        <button type="button" class="btn btn-ghost btn-sm new-request-btn" id="new-request" aria-label="New request" title="New request">+</button>
+      </div>
+      <div class="app-top-bar-actions">
+        <span class="unsaved-label hidden" id="unsaved-label" role="status">Unsaved</span>
+        <button type="button" class="btn btn-ghost btn-sm" id="save">Save</button>
+      </div>
     </div>
     <div class="request-bar-sticky">
       <div class="request-bar">
@@ -159,12 +165,16 @@ function applySplit(percent: number): void {
 function bindSplitHandle(): void {
   const handle = document.getElementById("split-handle")!;
   const workspace = document.getElementById("workspace")!;
+  handle.setAttribute("aria-valuemin", "25");
+  handle.setAttribute("aria-valuemax", "70");
+  handle.setAttribute("aria-valuenow", String(state.splitPercent));
   let dragging = false;
   const onMove = (clientY: number): void => {
     const rect = workspace.getBoundingClientRect();
     const pct = Math.min(70, Math.max(25, ((clientY - rect.top) / rect.height) * 100));
     state.splitPercent = Math.round(pct);
     applySplit(state.splitPercent);
+    handle.setAttribute("aria-valuenow", String(state.splitPercent));
     vscode.setState({ splitPercent: state.splitPercent });
     post({ type: "persistSplit", splitPercent: state.splitPercent });
   };
@@ -182,7 +192,20 @@ function bindSplitHandle(): void {
   handle.addEventListener("dblclick", () => {
     state.splitPercent = 45;
     applySplit(45);
+    handle.setAttribute("aria-valuenow", "45");
     post({ type: "persistSplit", splitPercent: 45 });
+  });
+  handle.addEventListener("keydown", (event) => {
+    if (!["ArrowUp", "ArrowDown", "Home", "End"].includes(event.key)) return;
+    event.preventDefault();
+    const next = event.key === "Home" ? 45
+      : event.key === "End" ? 70
+        : Math.min(70, Math.max(25, state.splitPercent + (event.key === "ArrowDown" ? 5 : -5)));
+    state.splitPercent = next;
+    applySplit(next);
+    handle.setAttribute("aria-valuenow", String(next));
+    vscode.setState({ splitPercent: next });
+    post({ type: "persistSplit", splitPercent: next });
   });
 }
 
@@ -194,9 +217,7 @@ function syncParamsFromUrl(url: string): void {
     u.searchParams.forEach((value, key) => {
       params.push({ key, value, enabled: true });
     });
-    if (params.length) {
-      state.request.params = [...params, emptyRow()];
-    }
+    state.request.params = params.length ? [...params, emptyRow()] : [emptyRow()];
   } catch {
     /* invalid url */
   }
@@ -216,6 +237,11 @@ function bindShellEvents(): void {
   document.getElementById("method")!.addEventListener("change", (e) => {
     state.request.method = (e.target as HTMLSelectElement).value as HttpMethod;
     syncMethodSelect();
+    const contextMethod = document.getElementById("request-context-method");
+    if (contextMethod) {
+      contextMethod.textContent = state.request.method;
+      contextMethod.className = `request-context-method method-${state.request.method}`;
+    }
     debouncedDraft();
   });
   document.getElementById("url")!.addEventListener("input", (e) => {
@@ -264,6 +290,16 @@ function syncMethodSelect(): void {
 
 function syncTopBar(): void {
   (document.getElementById("url") as HTMLInputElement).value = state.request.url;
+  const name = document.getElementById("request-context-name");
+  if (name) {
+    name.textContent = state.request.name || "Untitled request";
+    name.title = state.request.name || "Untitled request";
+  }
+  const method = document.getElementById("request-context-method");
+  if (method) {
+    method.textContent = state.request.method;
+    method.className = `request-context-method method-${state.request.method}`;
+  }
   syncMethodSelect();
   highlightUrlVars();
   renderChrome();
@@ -274,7 +310,7 @@ function renderChrome(): void {
   const cancelBtn = document.getElementById("cancel");
   const saveBtn = document.getElementById("save");
   const progress = document.getElementById("progress-bar");
-  const dot = document.getElementById("unsaved-dot");
+  const unsaved = document.getElementById("unsaved-label");
   if (!sendBtn) {
     return;
   }
@@ -283,7 +319,7 @@ function renderChrome(): void {
   saveBtn?.toggleAttribute("disabled", state.sending);
   sendBtn.toggleAttribute("disabled", state.sending);
   progress?.classList.toggle("hidden", !state.sending);
-  dot?.classList.toggle("hidden", !state.dirty);
+  unsaved?.classList.toggle("hidden", !state.dirty);
   const unresolved = findUnresolved(state.request.url);
   const warn = document.getElementById("url-warning");
   if (warn) {
@@ -345,7 +381,7 @@ function renderBuilderTabs(): void {
   tabs.innerHTML = names
     .map(
       (t) =>
-        `<li><button type="button" class="tab-bar-btn" data-tab="${t}" aria-selected="${state.builderTab === t}">${tabLabel(t)}</button></li>`
+        `<li><button type="button" class="tab-bar-btn" role="tab" id="builder-tab-${t}" aria-controls="builder-panel" data-tab="${t}" aria-selected="${state.builderTab === t}" tabindex="${state.builderTab === t ? "0" : "-1"}">${tabLabel(t)}</button></li>`
     )
     .join("");
   tabs.querySelectorAll("button").forEach((btn) => {
@@ -354,11 +390,23 @@ function renderBuilderTabs(): void {
       renderBuilderPanel();
       renderBuilderTabs();
     });
+    btn.addEventListener("keydown", (event) => {
+      const keys = ["ArrowLeft", "ArrowRight", "Home", "End"];
+      if (!keys.includes(event.key)) return;
+      event.preventDefault();
+      const all = Array.from(tabs.querySelectorAll<HTMLButtonElement>("[role='tab']"));
+      const current = all.indexOf(btn as HTMLButtonElement);
+      const next = event.key === "Home" ? 0 : event.key === "End" ? all.length - 1 : (current + (event.key === "ArrowRight" ? 1 : all.length - 1)) % all.length;
+      all[next]?.click();
+      all[next]?.focus();
+    });
   });
 }
 
 function renderBuilderPanel(): void {
   const panel = document.getElementById("builder-panel")!;
+  panel.setAttribute("role", "tabpanel");
+  panel.setAttribute("aria-labelledby", `builder-tab-${state.builderTab}`);
   destroyEditor(bodyEditor);
   bodyEditor = undefined;
 
@@ -422,7 +470,7 @@ function kvTableHtml(id: string, rows: KeyValue[], caption: string): string {
               (row, i) => `
             <tr data-idx="${i}">
               <td class="col-check"><input type="checkbox" class="kv-check" ${row.enabled ? "checked" : ""} aria-label="Enable row" /></td>
-              <td><input type="text" class="rf-input rf-input-sm kv-key" value="${escAttr(row.key)}" placeholder="Key" list="header-keys" /></td>
+              <td><input type="text" class="rf-input rf-input-sm kv-key" value="${escAttr(row.key)}" placeholder="Key" ${id === "headers" ? 'list="header-keys"' : ""} /></td>
               <td><input type="text" class="rf-input rf-input-sm kv-val" value="${escAttr(row.value)}" placeholder="Value" /></td>
               <td class="col-action"><button type="button" class="btn btn-icon-only btn-ghost btn-remove" aria-label="Remove row">×</button></td>
             </tr>`
@@ -459,9 +507,7 @@ function bindKvTable(panel: HTMLElement, field: "params" | "headers"): void {
   const sync = (): void => {
     state.request[field] = read();
     debouncedDraft();
-    if (field === "headers" && state.builderTab === "headers") {
-      renderBuilderPanel();
-    }
+    renderBuilderTabs();
   };
   table.addEventListener("input", sync);
   table.addEventListener("change", sync);
@@ -716,7 +762,7 @@ function renderResponse(): void {
     return;
   }
   if (!state.response) {
-    section.innerHTML = `<div class="empty-response">Press Send or Ctrl+Enter to get a response</div>`;
+    section.innerHTML = `<div class="empty-response"><span class="empty-response-mark" aria-hidden="true">↗</span><strong>Response will appear here</strong><span>Configure your request, then select <b>Send</b>.</span></div>`;
     return;
   }
 
@@ -741,13 +787,13 @@ function renderResponse(): void {
           <span class="meta-item">${formatBytes(r.sizeBytes)}</span>
         </div>
         <div class="response-actions">
-          <button type="button" class="btn btn-ghost btn-sm" id="copy-resp">Copy</button>
+          <button type="button" class="btn btn-ghost btn-sm" id="copy-resp" aria-label="Copy response body">Copy body</button>
         </div>
       </div>
       <nav class="tab-bar-nav response-tab-nav" aria-label="Response view">
         <div class="tab-bar response-tabs" role="tablist">
-          <button type="button" class="tab-bar-btn" role="tab" data-rview="body" aria-selected="${state.responseView === "body"}">Body</button>
-          <button type="button" class="tab-bar-btn" role="tab" data-rview="headers" aria-selected="${state.responseView === "headers"}">Headers (${Object.keys(r.headers).length})</button>
+          <button type="button" class="tab-bar-btn" role="tab" id="response-tab-body" aria-controls="response-body-host" data-rview="body" aria-selected="${state.responseView === "body"}" tabindex="${state.responseView === "body" ? "0" : "-1"}">Body</button>
+          <button type="button" class="tab-bar-btn" role="tab" id="response-tab-headers" aria-controls="response-headers-panel" data-rview="headers" aria-selected="${state.responseView === "headers"}" tabindex="${state.responseView === "headers" ? "0" : "-1"}">Headers (${Object.keys(r.headers).length})</button>
           ${
             state.responseView === "body" && ct.includes("json")
               ? `<button type="button" class="btn btn-ghost btn-sm raw-toggle" id="raw-toggle">${state.responseRaw ? "Pretty JSON" : "Raw"}</button>`
@@ -757,8 +803,8 @@ function renderResponse(): void {
       </nav>
     </div>
     <div class="response-viewport">
-      <div id="response-body-host" class="editor-host response-editor-host ${state.responseView === "headers" ? "hidden" : ""}"></div>
-      <div class="response-headers-panel ${state.responseView === "headers" ? "" : "hidden"}"></div>
+      <div id="response-body-host" role="tabpanel" aria-labelledby="response-tab-body" class="editor-host response-editor-host ${state.responseView === "headers" ? "hidden" : ""}"></div>
+      <div id="response-headers-panel" role="tabpanel" aria-labelledby="response-tab-headers" class="response-headers-panel ${state.responseView === "headers" ? "" : "hidden"}"></div>
     </div>
   `;
 
@@ -770,6 +816,15 @@ function renderResponse(): void {
     btn.addEventListener("click", () => {
       state.responseView = (btn as HTMLElement).dataset.rview as ResponseView;
       renderResponse();
+    });
+    btn.addEventListener("keydown", (event) => {
+      if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
+      event.preventDefault();
+      const tabs = Array.from(section.querySelectorAll<HTMLButtonElement>("[data-rview]"));
+      const current = tabs.indexOf(btn as HTMLButtonElement);
+      const next = (current + (event.key === "ArrowRight" ? 1 : tabs.length - 1)) % tabs.length;
+      tabs[next]?.click();
+      section.querySelector<HTMLButtonElement>(`[data-rview='${tabs[next]?.dataset.rview}']`)?.focus();
     });
   });
 

@@ -119,6 +119,9 @@ function appendQueryParams(
 ): string {
   try {
     const url = new URL(baseUrl);
+    // Query parameters are represented by draft.params in the editor. Replace
+    // the URL's parsed query before appending them so URL edits are not sent twice.
+    url.search = "";
     for (const row of params) {
       if (!row.enabled || !row.key.trim()) {
         continue;

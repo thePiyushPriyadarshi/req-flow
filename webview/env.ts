@@ -39,12 +39,14 @@ function render(): void {
     <header class="panel-header">
       <label class="field field-inline">
         <span class="text-label">Environment</span>
-        <input class="rf-input rf-input-title" id="env-name" value="${escAttr(envName)}" aria-label="Environment name" />
+        <input class="rf-input rf-input-title" id="env-name" value="${escAttr(envName)}" aria-label="Environment name" required />
       </label>
       <div class="panel-header-actions">
+        <span class="env-save-status text-meta" id="env-save-status" role="status" aria-live="polite"></span>
         <button type="button" class="btn btn-primary" id="save">Save</button>
       </div>
     </header>
+    <p class="env-intro text-meta">Use <code>{{variable}}</code> in request URLs, headers, and bodies. Default headers are added to each request in this environment.</p>
     <h2 class="section-title">Variables</h2>
     ${kvTable("vars", variables)}
     <h2 class="section-title">Default headers</h2>
@@ -86,7 +88,16 @@ function bind(): void {
   document.getElementById("save")!.addEventListener("click", () => {
     variables = readTable("vars");
     defaultHeaders = readTable("headers");
-    const name = (document.getElementById("env-name") as HTMLInputElement).value.trim();
+    const nameInput = document.getElementById("env-name") as HTMLInputElement;
+    const name = nameInput.value.trim();
+    if (!name) {
+      nameInput.setCustomValidity("Enter a name for this environment.");
+      nameInput.reportValidity();
+      return;
+    }
+    nameInput.setCustomValidity("");
+    const status = document.getElementById("env-save-status");
+    if (status) status.textContent = "Saving…";
     const environment: Environment = {
       name,
       variables: toRecord(variables),
@@ -94,8 +105,23 @@ function bind(): void {
     };
     vscode.postMessage({ type: "save", environment });
   });
+  document.getElementById("env-name")?.addEventListener("input", (event) => {
+    (event.target as HTMLInputElement).setCustomValidity("");
+    const status = document.getElementById("env-save-status");
+    if (status) status.textContent = "";
+  });
+  app.querySelectorAll(".kv-table input").forEach((input) => {
+    const clearSavedStatus = (): void => {
+      const status = document.getElementById("env-save-status");
+      if (status) status.textContent = "";
+    };
+    input.addEventListener("input", clearSavedStatus);
+    input.addEventListener("change", clearSavedStatus);
+  });
   app.querySelectorAll("[data-add]").forEach((btn) => {
     btn.addEventListener("click", () => {
+      const status = document.getElementById("env-save-status");
+      if (status) status.textContent = "";
       const id = (btn as HTMLElement).dataset.add!;
       if (id === "vars") {
         variables = [...readTable("vars"), emptyRow()];
@@ -107,6 +133,8 @@ function bind(): void {
   });
   app.querySelectorAll(".rm").forEach((btn) => {
     btn.addEventListener("click", () => {
+      const status = document.getElementById("env-save-status");
+      if (status) status.textContent = "";
       const tr = btn.closest("tr")!;
       const table = tr.closest("table")!;
       const id = table.getAttribute("data-id")!;
@@ -135,6 +163,9 @@ window.addEventListener("message", (e) => {
       ? env.defaultHeaders
       : [emptyRow()];
     render();
+  } else if (e.data.type === "saved") {
+    const status = document.getElementById("env-save-status");
+    if (status) status.textContent = "Environment saved";
   }
 });
 

@@ -53,6 +53,7 @@ export class EnvironmentEditorPanel {
         await store.upsertEnvironment(msg.environment);
         this.env = msg.environment;
         onSaved();
+        void panel.webview.postMessage({ type: "saved" });
         void vscode.window.setStatusBarMessage(
           `ReqFlow: saved environment "${msg.environment.name}"`,
           3000
