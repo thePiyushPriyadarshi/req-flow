@@ -2,10 +2,6 @@
 
 **Build, send, and inspect REST API requests without leaving VS Code.**
 
-[![Version](https://img.shields.io/visual-studio-marketplace/v/piyushpriyadarshi.reqflow?label=Marketplace)](https://marketplace.visualstudio.com/items?itemName=piyushpriyadarshi.reqflow)
-[![Installs](https://img.shields.io/visual-studio-marketplace/i/piyushpriyadarshi.reqflow)](https://marketplace.visualstudio.com/items?itemName=piyushpriyadarshi.reqflow)
-[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-
 ReqFlow is a lightweight REST API client built directly into VS Code. Create, organize, and test API requests without switching between tools.
 
 ![ReqFlow in VS Code with a request builder, collections, response, and request history](media/preview.png)
@@ -31,10 +27,10 @@ ReqFlow is a lightweight REST API client built directly into VS Code. Create, or
 
 ## Quick start
 
-1. Install **ReqFlow: REST API Client & Tester** from the [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=piyushpriyadarshi.reqflow), or from the terminal:
+1. Install **ReqFlow: REST API Client & Tester** from the [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=piyushpriyadarshi.reqflow-api-client), or from the terminal:
 
    ```bash
-   code --install-extension piyushpriyadarshi.reqflow
+   code --install-extension piyushpriyadarshi.reqflow-api-client
    ```
 
 2. Click the **ReqFlow** icon in the activity bar.
@@ -49,7 +45,7 @@ ReqFlow is a lightweight REST API client built directly into VS Code. Create, or
 ## Support and feedback
 
 - Found a bug or want a feature? [Open an issue](https://github.com/thePiyushPriyadarshi/req-flow/issues).
-- Enjoying ReqFlow? A rating on the [Marketplace page](https://marketplace.visualstudio.com/items?itemName=piyushpriyadarshi.reqflow&ssr=false#review-details) helps other developers find it.
+- Enjoying ReqFlow? A rating on the [Marketplace page](https://marketplace.visualstudio.com/items?itemName=piyushpriyadarshi.reqflow-api-client&ssr=false#review-details) helps other developers find it.
 
 See [CHANGELOG.md](CHANGELOG.md) for release notes.
 
