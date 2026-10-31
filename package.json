@@ -1,6 +1,6 @@
 {
   "name": "reqflow-api-client",
-  "displayName": "ReqFlow: REST API Client & Tester",
+  "displayName": "ReqFlow API Client",
   "description": "REST API client for VS Code. Test APIs with collections, environments, history, and cURL. No login or account required.",
   "icon": "media/logo.png",
   "version": "1.0.0",

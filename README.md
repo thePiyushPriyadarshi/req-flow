@@ -1,4 +1,4 @@
-# ReqFlow: REST API Client & Tester
+# ReqFlow API Client
 
 **Build, send, and inspect REST API requests without leaving VS Code.**
 
