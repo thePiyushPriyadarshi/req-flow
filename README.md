@@ -1,8 +1,10 @@
-# ReqFlow: Simple API Tester
+# ReqFlow: REST API Client & HTTP Tester 
 
-**Test REST APIs inside VS Code — simple, local, and fast.**
+**Build, send, and inspect REST API requests in VS Code. No login required.**
 
-ReqFlow is a lightweight HTTP client extension: build requests in a native-feeling panel, inspect responses, organize saved requests in collections, and switch environments without leaving the editor. Everything stays on your machine in VS Code global storage — no accounts, no cloud sync, no telemetry.
+ReqFlow is a lightweight REST API client and HTTP testing extension for VS Code. Create requests, test endpoints, inspect JSON responses, and organize API work with collections, environments, request history, and cURL import. It’s a focused Postman alternative for developers who want an API client inside their editor. **No login or account required.** Requests and data stay in VS Code global storage on your machine; ReqFlow has no cloud sync or telemetry.
+
+![ReqFlow REST API client for VS Code showing the request builder, collections, response, and request history](media/preview.png)
 
 ## Features
 
@@ -55,7 +57,7 @@ ReqFlow is a lightweight HTTP client extension: build requests in a native-feeli
 
 ## Quick start (users)
 
-1. Install **ReqFlow: Simple API Tester** from the [VS Code Marketplace](https://marketplace.visualstudio.com/) (or install a `.vsix` — see below).
+1. Install **ReqFlow: REST API Client & Tester** from the [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=reqflow.reqflow) (or install a `.vsix` — see below).
 2. Click the **ReqFlow** icon in the activity bar.
 3. Open **Sample GET** under **Collections**, choose **local** in the status bar if needed, and press **Send**.
 
@@ -79,7 +81,7 @@ Press **F5** to launch an **Extension Development Host**, then use the ReqFlow s
 **Install a local VSIX:** Extensions view → **⋯** → **Install from VSIX…**, or:
 
 ```bash
-code --install-extension reqflow-0.3.0.vsix
+code --install-extension reqflow-1.0.0.vsix
 ```
 
 **Reveal on-disk data:** Command Palette → **ReqFlow: Reveal Storage Folder**.
@@ -104,7 +106,7 @@ Publishing uses [Visual Studio Marketplace](https://marketplace.visualstudio.com
 
 5. **Repository & icon (recommended before first publish)**  
    - Set `repository`, `bugs`, and `homepage` in `package.json` to your GitHub repo.  
-   - Marketplace listing looks best with a **128×128 PNG** at `media/icon.png` and `"icon": "media/icon.png"` in `package.json` (SVG works in the activity bar; PNG is preferred for store search results).
+   - Marketplace listing looks best with a **128×128 PNG** at `media/logo.png` and `"icon": "media/logo.png"` in `package.json` (SVG works in the activity bar; PNG is preferred for store search results).
 
 ### Pre-publish checklist
 
@@ -131,7 +133,7 @@ This runs `vsce publish --no-dependencies` (dependencies are bundled; dev files 
 | Field         | Value                          |
 |---------------|--------------------------------|
 | Name          | `reqflow`                      |
-| Display name  | ReqFlow: Simple API Tester     |
+| Display name  | ReqFlow: REST API Client & Tester     |
 | ID            | `reqflow.reqflow`              |
 
 ## Privacy & storage

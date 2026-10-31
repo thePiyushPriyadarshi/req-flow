@@ -1,9 +1,9 @@
 {
   "name": "reqflow",
-  "displayName": "ReqFlow: Simple API Tester",
-  "description": "Lightweight REST client in VS Code: collections, environments, history, cURL import — local storage, no account.",
+  "displayName": "ReqFlow: REST API Client & Tester",
+  "description": "REST API client for VS Code. Test APIs with collections, environments, history, and cURL. No login or account required.",
   "icon": "media/logo.png",
-  "version": "0.3.0",
+  "version": "1.0.0",
   "publisher": "reqflow",
   "license": "MIT",
   "repository": {
@@ -25,8 +25,16 @@
     "api",
     "rest",
     "http",
+    "rest-client",
+    "api-client",
+    "api-testing",
+    "http-client",
+    "postman",
     "curl",
-    "postman"
+    "json",
+    "vscode",
+    "request-builder",
+    "no-login"
   ],
   "activationEvents": [],
   "main": "./out/extension.js",
@@ -298,9 +306,9 @@
     "compile": "node esbuild.mjs",
     "watch": "node esbuild.mjs --watch",
     "lint": "tsc --noEmit",
-    "vsix": "vsce package --no-dependencies",
+    "vsix": "vsce package --no-dependencies --githubBranch main",
     "package": "npm run vsix",
-    "publish": "vsce publish --no-dependencies"
+    "publish": "vsce publish --no-dependencies --githubBranch main"
   },
   "dependencies": {
     "@codemirror/autocomplete": "^6.18.6",
