@@ -4,7 +4,7 @@
   "description": "REST API client for VS Code. Test APIs with collections, environments, history, and cURL. No login or account required.",
   "icon": "media/logo.png",
   "version": "1.0.0",
-  "publisher": "reqflow",
+  "publisher": "piyushpriyadarshi",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -29,12 +29,13 @@
     "api-client",
     "api-testing",
     "http-client",
-    "postman",
+    "postman alternative",
     "curl",
     "json",
     "vscode",
     "request-builder",
-    "no-login"
+    "no-login",
+    "no account"
   ],
   "activationEvents": [],
   "main": "./out/extension.js",
