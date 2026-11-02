@@ -14,10 +14,16 @@ const COLLECTIONS_FILE = "collections.json";
 const ENVIRONMENTS_FILE = "environments.json";
 const HISTORY_FILE = "history.json";
 const UI_FILE = "ui.json";
+const DRAFT_FILE = "draft.json";
 const MAX_HISTORY = 50;
 
 interface UiPreferences {
   splitPercent?: number;
+}
+
+interface DraftState {
+  requestId: string;
+  draft: ApiRequest;
 }
 
 interface EnvironmentsFile {
@@ -67,6 +73,24 @@ export class ReqFlowStore {
   async setUiPreference(partial: UiPreferences): Promise<void> {
     this.ui = { ...this.ui, ...partial };
     await this.writeJson(UI_FILE, this.ui);
+  }
+
+  async saveDraft(requestId: string, draft: ApiRequest): Promise<void> {
+    const draftState: DraftState = { requestId, draft };
+    await this.writeJson(DRAFT_FILE, draftState);
+  }
+
+  async loadDraft(): Promise<DraftState | null> {
+    return this.readJson<DraftState | null>(DRAFT_FILE, null);
+  }
+
+  async clearDraft(): Promise<void> {
+    try {
+      const uri = vscode.Uri.joinPath(this.storageUri, DRAFT_FILE);
+      await vscode.workspace.fs.delete(uri);
+    } catch {
+      /* file may not exist */
+    }
   }
 
   async addEnvironment(name: string): Promise<void> {

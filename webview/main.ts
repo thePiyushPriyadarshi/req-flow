@@ -42,6 +42,7 @@ interface AppState {
   responseRaw: boolean;
   splitPercent: number;
   dirty: boolean;
+  autoSaving: boolean;
 }
 
 const state: AppState = {
@@ -56,6 +57,7 @@ const state: AppState = {
   responseRaw: false,
   splitPercent: 45,
   dirty: false,
+  autoSaving: false,
 };
 
 let bodyEditor: EditorView | undefined;
@@ -320,6 +322,18 @@ function renderChrome(): void {
   sendBtn.toggleAttribute("disabled", state.sending);
   progress?.classList.toggle("hidden", !state.sending);
   unsaved?.classList.toggle("hidden", !state.dirty);
+
+  // Auto-save spinner on Save button
+  if (saveBtn) {
+    if (state.autoSaving) {
+      saveBtn.innerHTML = `<span class="autosave-spinner" aria-hidden="true"></span>Save`;
+      saveBtn.classList.add("is-autosaving");
+    } else {
+      saveBtn.innerHTML = `Save`;
+      saveBtn.classList.remove("is-autosaving");
+    }
+  }
+
   const unresolved = findUnresolved(state.request.url);
   const warn = document.getElementById("url-warning");
   if (warn) {
@@ -386,6 +400,8 @@ function renderBuilderTabs(): void {
     .join("");
   tabs.querySelectorAll("button").forEach((btn) => {
     btn.addEventListener("click", () => {
+      // Flush auth inputs before leaving the auth tab so values aren't lost
+      if (state.builderTab === "auth") flushAuthFields();
       state.builderTab = (btn as HTMLElement).dataset.tab as BuilderTab;
       renderBuilderPanel();
       renderBuilderTabs();
@@ -647,69 +663,130 @@ function authPanelHtml(): string {
   const authTypes: ApiRequest["auth"]["type"][] = ["none", "bearer", "basic"];
   const authLabels: Record<ApiRequest["auth"]["type"], string> = {
     none: "None",
-    bearer: "Bearer",
-    basic: "Basic",
+    bearer: "Bearer Token",
+    basic: "Basic Auth",
   };
-  const hasFields = a.type === "bearer" || a.type === "basic";
-  return `
-    <div class="panel-toolbar body-type-row">
-      <div class="segmented segmented--options" role="radiogroup" aria-label="Auth type">
-        ${authTypes
-          .map(
-            (type) =>
-              `<button type="button" class="segmented-btn segmented-btn--auth-${type}" data-auth-type="${type}" role="radio" aria-checked="${a.type === type}">${authLabels[type]}</button>`
-          )
-          .join("")}
-      </div>
-    </div>
-    <div class="builder-subpanel builder-subpanel--empty ${a.type === "none" ? "" : "hidden"}">No authorization</div>
-    <div class="builder-subpanel ${hasFields ? "" : "hidden"}">
-      <div class="auth-fields ${a.type === "bearer" ? "" : "hidden"}" id="auth-bearer">
+
+  const fieldsHtml = (() => {
+    if (a.type === "none") {
+      return `<div class="auth-empty-hint">No authorization will be sent with this request.</div>`;
+    }
+    if (a.type === "bearer") {
+      return `
         <div class="auth-field">
           <label class="text-label" for="auth-token">Token</label>
-          <input type="password" class="rf-input rf-input-sm rf-input-mono" id="auth-token" value="${escAttr(a.token ?? "")}" placeholder="{{token}}" autocomplete="off" />
+          <div class="auth-input-row">
+            <input type="password" class="rf-input rf-input-sm rf-input-mono" id="auth-token"
+              value="${escAttr(a.token ?? "")}" placeholder="{{token}}" autocomplete="off" />
+            <button type="button" class="btn btn-ghost btn-sm auth-reveal-btn" id="auth-reveal"
+              aria-label="Show / hide token" title="Show / hide">👁</button>
+          </div>
           <p class="auth-field-hint">Sent as <code class="auth-code">Authorization: Bearer …</code></p>
-        </div>
-      </div>
-      <div class="auth-fields ${a.type === "basic" ? "" : "hidden"}" id="auth-basic">
+        </div>`;
+    }
+    if (a.type === "basic") {
+      return `
         <div class="auth-field">
           <label class="text-label" for="auth-user">Username</label>
-          <input type="text" class="rf-input rf-input-sm" id="auth-user" value="${escAttr(a.username ?? "")}" autocomplete="off" />
+          <input type="text" class="rf-input rf-input-sm" id="auth-user"
+            value="${escAttr(a.username ?? "")}" autocomplete="off" />
         </div>
         <div class="auth-field">
           <label class="text-label" for="auth-pass">Password</label>
-          <input type="password" class="rf-input rf-input-sm" id="auth-pass" value="${escAttr(a.password ?? "")}" autocomplete="off" />
+          <div class="auth-input-row">
+            <input type="password" class="rf-input rf-input-sm" id="auth-pass"
+              value="${escAttr(a.password ?? "")}" autocomplete="off" />
+            <button type="button" class="btn btn-ghost btn-sm auth-reveal-btn" id="auth-reveal-pass"
+              aria-label="Show / hide password" title="Show / hide">👁</button>
+          </div>
           <p class="auth-field-hint">Sent as <code class="auth-code">Authorization: Basic …</code></p>
-        </div>
+        </div>`;
+    }
+    return "";
+  })();
+
+  return `
+    <div class="auth-layout">
+      <div class="auth-type-col">
+        <label class="text-label auth-type-label">Type</label>
+        <select id="auth-type-select" class="rf-input rf-input-sm auth-type-select" aria-label="Auth type">
+          ${authTypes.map(
+            (t) => `<option value="${t}" ${a.type === t ? "selected" : ""}>${authLabels[t]}</option>`
+          ).join("")}
+        </select>
+      </div>
+      <div class="auth-fields-col" id="auth-fields-col">
+        ${fieldsHtml}
       </div>
     </div>
   `;
 }
 
 function bindAuthPanel(): void {
-  document.querySelectorAll("[data-auth-type]").forEach((el) => {
-    el.addEventListener("click", () => {
-      const next = (el as HTMLElement).dataset.authType as ApiRequest["auth"]["type"];
-      if (state.request.auth.type === next) {
-        return;
-      }
-      state.request.auth.type = next;
-      renderBuilderPanel();
-      debouncedDraft();
-    });
-  });
-  document.getElementById("auth-token")?.addEventListener("input", (e) => {
-    state.request.auth.token = (e.target as HTMLInputElement).value;
+  // Dropdown type selector
+  const typeSelect = document.getElementById("auth-type-select") as HTMLSelectElement | null;
+  typeSelect?.addEventListener("change", () => {
+    const next = typeSelect.value as ApiRequest["auth"]["type"];
+    if (state.request.auth.type === next) return;
+    // Flush current field values before switching so they aren't lost
+    flushAuthFields();
+    state.request.auth.type = next;
+    renderBuilderPanel();
     debouncedDraft();
   });
-  document.getElementById("auth-user")?.addEventListener("input", (e) => {
-    state.request.auth.username = (e.target as HTMLInputElement).value;
+
+  // Token field (bearer)
+  const tokenInput = document.getElementById("auth-token") as HTMLInputElement | null;
+  tokenInput?.addEventListener("input", () => {
+    state.request.auth.token = tokenInput.value;
     debouncedDraft();
   });
-  document.getElementById("auth-pass")?.addEventListener("input", (e) => {
-    state.request.auth.password = (e.target as HTMLInputElement).value;
+  // Flush immediately on blur so switching tabs can't lose the value
+  tokenInput?.addEventListener("blur", () => {
+    state.request.auth.token = tokenInput.value;
+  });
+
+  // Reveal toggle for token
+  document.getElementById("auth-reveal")?.addEventListener("click", () => {
+    if (!tokenInput) return;
+    tokenInput.type = tokenInput.type === "password" ? "text" : "password";
+  });
+
+  // Username field (basic)
+  const userInput = document.getElementById("auth-user") as HTMLInputElement | null;
+  userInput?.addEventListener("input", () => {
+    state.request.auth.username = userInput.value;
     debouncedDraft();
   });
+  userInput?.addEventListener("blur", () => {
+    state.request.auth.username = userInput.value;
+  });
+
+  // Password field (basic)
+  const passInput = document.getElementById("auth-pass") as HTMLInputElement | null;
+  passInput?.addEventListener("input", () => {
+    state.request.auth.password = passInput.value;
+    debouncedDraft();
+  });
+  passInput?.addEventListener("blur", () => {
+    state.request.auth.password = passInput.value;
+  });
+
+  // Reveal toggle for password
+  document.getElementById("auth-reveal-pass")?.addEventListener("click", () => {
+    if (!passInput) return;
+    passInput.type = passInput.type === "password" ? "text" : "password";
+  });
+}
+
+/** Read current auth input values into state immediately (before re-render) */
+function flushAuthFields(): void {
+  const tokenInput = document.getElementById("auth-token") as HTMLInputElement | null;
+  if (tokenInput) state.request.auth.token = tokenInput.value;
+  const userInput = document.getElementById("auth-user") as HTMLInputElement | null;
+  if (userInput) state.request.auth.username = userInput.value;
+  const passInput = document.getElementById("auth-pass") as HTMLInputElement | null;
+  if (passInput) state.request.auth.password = passInput.value;
 }
 
 function pasteBulkHeaders(): void {
@@ -1009,7 +1086,18 @@ window.addEventListener("message", (event: MessageEvent<HostToWebviewMessage | {
   if (msg.type === "saved") {
     state.request = hydrateRequest((msg as HostToWebviewMessage & { type: "saved" }).request);
     state.dirty = false;
+    state.autoSaving = false;
     syncTopBar();
+  }
+  if (msg.type === "autoSaving") {
+    state.autoSaving = true;
+    renderChrome();
+    return;
+  }
+  if (msg.type === "autoSaved") {
+    state.autoSaving = false;
+    renderChrome();
+    return;
   }
 });
 

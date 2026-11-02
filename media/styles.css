@@ -116,11 +116,25 @@ body {
   font-weight: 700;
 }
 
-.request-context-method.method-GET { color: var(--rf-method-get); }
-.request-context-method.method-POST { color: var(--rf-method-post); }
-.request-context-method.method-PUT { color: var(--rf-method-put); }
-.request-context-method.method-PATCH { color: var(--rf-method-patch); }
-.request-context-method.method-DELETE { color: var(--rf-method-delete); }
+.request-context-method.method-GET {
+  color: var(--rf-method-get);
+}
+
+.request-context-method.method-POST {
+  color: var(--rf-method-post);
+}
+
+.request-context-method.method-PUT {
+  color: var(--rf-method-put);
+}
+
+.request-context-method.method-PATCH {
+  color: var(--rf-method-patch);
+}
+
+.request-context-method.method-DELETE {
+  color: var(--rf-method-delete);
+}
 
 .new-request-btn {
   width: 26px;
@@ -224,6 +238,7 @@ body {
   gap: var(--rf-space-2);
   flex-shrink: 0;
 }
+
 .rf-input-url,
 .url-input {
   font-family: var(--rf-mono);
@@ -246,11 +261,25 @@ body {
   background-repeat: no-repeat;
 }
 
-.method-select.method-GET { color: var(--rf-method-get); }
-.method-select.method-POST { color: var(--rf-method-post); }
-.method-select.method-PUT { color: var(--rf-method-put); }
-.method-select.method-PATCH { color: var(--rf-method-patch); }
-.method-select.method-DELETE { color: var(--rf-method-delete); }
+.method-select.method-GET {
+  color: var(--rf-method-get);
+}
+
+.method-select.method-POST {
+  color: var(--rf-method-post);
+}
+
+.method-select.method-PUT {
+  color: var(--rf-method-put);
+}
+
+.method-select.method-PATCH {
+  color: var(--rf-method-patch);
+}
+
+.method-select.method-DELETE {
+  color: var(--rf-method-delete);
+}
 
 .url-input.has-unresolved {
   border-color: var(--rf-var-bad);
@@ -428,8 +457,13 @@ body {
 }
 
 @keyframes rf-progress {
-  from { transform: translateX(-100%); }
-  to { transform: translateX(350%); }
+  from {
+    transform: translateX(-100%);
+  }
+
+  to {
+    transform: translateX(350%);
+  }
 }
 
 /* Split layout */
@@ -628,11 +662,60 @@ body {
   color: var(--rf-fg);
 }
 
+/* Two-column auth layout: type selector on the left, fields on the right */
+.auth-layout {
+  display: flex;
+  gap: var(--rf-space-4);
+  align-items: flex-start;
+  flex: 1;
+  min-height: 0;
+}
+
+.auth-type-col {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rf-space-2);
+  flex: 0 0 9rem;
+  min-width: 7.5rem;
+  max-width: 11rem;
+}
+
+.auth-type-label {
+  font-size: var(--rf-text-xs);
+  font-weight: 600;
+  color: var(--rf-muted);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.auth-type-select {
+  width: 100%;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.auth-fields-col {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--rf-space-3);
+  padding-top: var(--rf-space-1);
+}
+
+.auth-empty-hint {
+  color: var(--rf-muted);
+  font-size: var(--rf-text-md);
+  padding: var(--rf-space-2) 0;
+  line-height: 1.5;
+}
+
 .auth-field {
   display: flex;
   flex-direction: column;
   gap: var(--rf-space-1);
   align-items: stretch;
+  max-width: 32rem;
 }
 
 .auth-field .text-label {
@@ -640,10 +723,43 @@ body {
 }
 
 .auth-field-hint {
-  margin: 0;
+  margin: var(--rf-space-1) 0 0;
   font-size: var(--rf-text-sm);
   color: var(--rf-muted);
   line-height: 1.45;
+}
+
+/* Row that holds password input + reveal toggle */
+.auth-input-row {
+  display: flex;
+  align-items: center;
+  gap: var(--rf-space-1);
+}
+
+.auth-input-row .rf-input {
+  flex: 1;
+  min-width: 0;
+}
+
+.auth-reveal-btn {
+  flex: 0 0 auto;
+  min-width: var(--rf-control-h);
+  min-height: var(--rf-control-h);
+  padding: 0;
+  font-size: 0.85rem;
+  line-height: 1;
+  opacity: 0.6;
+  transition: opacity 120ms ease;
+}
+
+.auth-reveal-btn:hover {
+  opacity: 1;
+}
+
+/* Divider between type col and fields col */
+.auth-type-col+.auth-fields-col {
+  border-left: 1px solid var(--rf-border);
+  padding-left: var(--rf-space-4);
 }
 
 .rf-input-mono {
@@ -1035,7 +1151,9 @@ body {
 }
 
 @keyframes rf-spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .error-card {

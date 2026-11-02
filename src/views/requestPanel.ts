@@ -85,7 +85,7 @@ export class RequestPanel {
       column ?? vscode.ViewColumn.One,
       {
         enableScripts: true,
-        retainContextWhenHidden: false,
+        retainContextWhenHidden: true,
         localResourceRoots: [vscode.Uri.joinPath(extensionUri, "media")],
       }
     );
@@ -291,6 +291,11 @@ export class RequestPanel {
         this.mergeDraft(msg.request);
         this.dirty = true;
         this.updateTitle();
+        // Auto-persist the draft so it survives extension restarts
+        this.post({ type: "autoSaving" });
+        void this.deps.store.saveDraft(this.request.id, this.request).then(() => {
+          this.post({ type: "autoSaved" });
+        });
         break;
       case "saveRequest":
         void this.persistRequest(msg.request);
@@ -356,6 +361,8 @@ export class RequestPanel {
     this.updateTitle();
     this.deps.onSaved();
     this.post({ type: "saved", request: saved });
+    // Draft is now persisted in collections — clear the standalone draft file
+    void this.deps.store.clearDraft();
   }
 
   private async executeSend(draft: ApiRequest): Promise<void> {

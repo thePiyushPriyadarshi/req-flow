@@ -115,4 +115,6 @@ export type HostToWebviewMessage =
   | { type: "envChanged"; activeEnvironment: string; variableKeys: string[] }
   | { type: "focusUrl" }
   | { type: "triggerSave" }
-  | { type: "triggerSend" };
+  | { type: "triggerSend" }
+  | { type: "autoSaving" }
+  | { type: "autoSaved" };

@@ -1,6 +1,6 @@
 import type { ApiError, ApiResponse, OutboundRequest } from "../types";
 
-const DEFAULT_TIMEOUT_MS = 30_000;
+const DEFAULT_TIMEOUT_MS = 300_000; // 5 minutes
 
 export async function sendRequest(
   req: OutboundRequest,
@@ -53,7 +53,7 @@ export async function sendRequest(
   } catch (err) {
     if (err instanceof Error && err.name === "AbortError") {
       throw clientError(
-        signal?.aborted ? "Request cancelled" : "Request timed out after 30s"
+        signal?.aborted ? "Request cancelled" : "Request timed out after 5 minutes"
       );
     }
     const message =
