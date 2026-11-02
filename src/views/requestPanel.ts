@@ -289,13 +289,24 @@ export class RequestPanel {
         break;
       case "saveDraft":
         this.mergeDraft(msg.request);
-        this.dirty = true;
-        this.updateTitle();
-        // Auto-persist the draft so it survives extension restarts
-        this.post({ type: "autoSaving" });
-        void this.deps.store.saveDraft(this.request.id, this.request).then(() => {
-          this.post({ type: "autoSaved" });
-        });
+        const inCollection = Boolean(this.deps.store.findRequest(this.request.id));
+        if (inCollection) {
+          this.post({ type: "autoSaving" });
+          void this.deps.store.saveRequest(this.request).then(() => {
+            this.dirty = false;
+            this.updateTitle();
+            this.deps.onSaved();
+            this.post({ type: "saved", request: this.request });
+            void this.deps.store.clearDraft(this.request.id);
+          });
+        } else {
+          this.dirty = true;
+          this.updateTitle();
+          this.post({ type: "autoSaving" });
+          void this.deps.store.saveDraft(this.request.id, this.request).then(() => {
+            this.post({ type: "autoSaved" });
+          });
+        }
         break;
       case "saveRequest":
         void this.persistRequest(msg.request);
@@ -362,7 +373,7 @@ export class RequestPanel {
     this.deps.onSaved();
     this.post({ type: "saved", request: saved });
     // Draft is now persisted in collections — clear the standalone draft file
-    void this.deps.store.clearDraft();
+    void this.deps.store.clearDraft(this.request.id);
   }
 
   private async executeSend(draft: ApiRequest): Promise<void> {

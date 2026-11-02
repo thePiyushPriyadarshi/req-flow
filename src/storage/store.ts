@@ -76,20 +76,41 @@ export class ReqFlowStore {
   }
 
   async saveDraft(requestId: string, draft: ApiRequest): Promise<void> {
-    const draftState: DraftState = { requestId, draft };
-    await this.writeJson(DRAFT_FILE, draftState);
+    const drafts = await this.loadAllDrafts();
+    drafts[requestId] = { ...draft };
+    await this.writeJson(DRAFT_FILE, drafts);
   }
 
   async loadDraft(): Promise<DraftState | null> {
-    return this.readJson<DraftState | null>(DRAFT_FILE, null);
+    const drafts = await this.loadAllDrafts();
+    const entries = Object.entries(drafts);
+    if (!entries.length) return null;
+    return { requestId: entries[0][0], draft: entries[0][1] };
   }
 
-  async clearDraft(): Promise<void> {
-    try {
-      const uri = vscode.Uri.joinPath(this.storageUri, DRAFT_FILE);
-      await vscode.workspace.fs.delete(uri);
-    } catch {
-      /* file may not exist */
+  async loadAllDrafts(): Promise<Record<string, ApiRequest>> {
+    const raw = await this.readJson<any>(DRAFT_FILE, {});
+    if (!raw) return {};
+    if (raw.requestId && raw.draft) {
+      return { [raw.requestId]: raw.draft };
+    }
+    return typeof raw === "object" ? raw : {};
+  }
+
+  async clearDraft(requestId?: string): Promise<void> {
+    if (!requestId) {
+      try {
+        const uri = vscode.Uri.joinPath(this.storageUri, DRAFT_FILE);
+        await vscode.workspace.fs.delete(uri);
+      } catch {
+        /* file may not exist */
+      }
+      return;
+    }
+    const drafts = await this.loadAllDrafts();
+    if (requestId in drafts) {
+      delete drafts[requestId];
+      await this.writeJson(DRAFT_FILE, drafts);
     }
   }
 

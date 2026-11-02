@@ -244,18 +244,15 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 
   statusBar.show();
 
-  // Restore any unsaved draft from the last session
-  const draft = await store.loadDraft();
-  if (draft) {
-    // If the request is in collections, open it with the draft state applied
-    const existing = store.findRequest(draft.requestId);
+  // Restore any unsaved drafts from the last session
+  const drafts = await store.loadAllDrafts();
+  for (const [requestId, draftReq] of Object.entries(drafts)) {
+    const existing = store.findRequest(requestId);
     if (existing) {
-      // Merge the draft over the stored request
-      const restored = { ...existing.request, ...draft.draft, id: existing.request.id };
+      const restored = { ...existing.request, ...draftReq, id: existing.request.id };
       openRequest(restored, false);
-    } else if (!draft.requestId.startsWith("history-")) {
-      // Unsaved new request — reopen the draft directly
-      openRequest(draft.draft, false);
+    } else if (!requestId.startsWith("history-")) {
+      openRequest(draftReq, false);
     }
   }
 }

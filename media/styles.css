@@ -90,15 +90,27 @@ body {
   flex-shrink: 0;
 }
 
-.request-context,
+.request-context {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  gap: var(--rf-space-2);
+  height: 28px;
+}
+
 .app-top-bar-actions {
   display: flex;
   align-items: center;
   min-width: 0;
   gap: var(--rf-space-2);
+  height: 28px;
 }
 
 .request-context-name {
+  display: inline-flex;
+  align-items: center;
+  height: 24px;
+  line-height: 24px;
   overflow: hidden;
   max-width: min(34vw, 22rem);
   color: var(--rf-fg);
@@ -109,40 +121,57 @@ body {
 }
 
 .request-context-method {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 3px;
   flex: 0 0 auto;
   color: var(--rf-muted);
   font-family: var(--rf-mono);
   font-size: 0.6875rem;
   font-weight: 700;
+  line-height: 1;
+  background: color-mix(in srgb, currentColor 10%, transparent);
 }
 
-.request-context-method.method-GET {
-  color: var(--rf-method-get);
-}
-
-.request-context-method.method-POST {
-  color: var(--rf-method-post);
-}
-
-.request-context-method.method-PUT {
-  color: var(--rf-method-put);
-}
-
-.request-context-method.method-PATCH {
-  color: var(--rf-method-patch);
-}
-
-.request-context-method.method-DELETE {
-  color: var(--rf-method-delete);
-}
+.request-context-method.method-GET { color: var(--rf-method-get); }
+.request-context-method.method-POST { color: var(--rf-method-post); }
+.request-context-method.method-PUT { color: var(--rf-method-put); }
+.request-context-method.method-PATCH { color: var(--rf-method-patch); }
+.request-context-method.method-DELETE { color: var(--rf-method-delete); }
 
 .new-request-btn {
-  width: 26px;
-  min-width: 26px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  min-width: 24px;
   padding: 0;
-  border: 1px solid var(--rf-border);
-  color: var(--rf-fg);
-  font-size: 1rem;
+  margin: 0;
+  border: 1px solid var(--vscode-widget-border, var(--rf-border, rgba(128, 128, 128, 0.35)));
+  border-radius: var(--rf-radius-sm, 4px);
+  color: var(--vscode-foreground, var(--rf-fg, #cccccc));
+  background: transparent;
+  cursor: pointer;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  transition: all 120ms ease;
+}
+
+.new-request-btn:hover {
+  background: var(--vscode-toolbar-hoverBackground, rgba(128, 128, 128, 0.2));
+  border-color: var(--vscode-focusBorder, #007acc);
+  color: var(--vscode-editor-foreground, #ffffff);
+}
+
+.new-request-btn svg {
+  display: block;
+  width: 14px;
+  height: 14px;
+  pointer-events: none;
 }
 
 .app-top-bar-actions {
@@ -238,7 +267,6 @@ body {
   gap: var(--rf-space-2);
   flex-shrink: 0;
 }
-
 .rf-input-url,
 .url-input {
   font-family: var(--rf-mono);
@@ -261,25 +289,11 @@ body {
   background-repeat: no-repeat;
 }
 
-.method-select.method-GET {
-  color: var(--rf-method-get);
-}
-
-.method-select.method-POST {
-  color: var(--rf-method-post);
-}
-
-.method-select.method-PUT {
-  color: var(--rf-method-put);
-}
-
-.method-select.method-PATCH {
-  color: var(--rf-method-patch);
-}
-
-.method-select.method-DELETE {
-  color: var(--rf-method-delete);
-}
+.method-select.method-GET { color: var(--rf-method-get); }
+.method-select.method-POST { color: var(--rf-method-post); }
+.method-select.method-PUT { color: var(--rf-method-put); }
+.method-select.method-PATCH { color: var(--rf-method-patch); }
+.method-select.method-DELETE { color: var(--rf-method-delete); }
 
 .url-input.has-unresolved {
   border-color: var(--rf-var-bad);
@@ -457,13 +471,8 @@ body {
 }
 
 @keyframes rf-progress {
-  from {
-    transform: translateX(-100%);
-  }
-
-  to {
-    transform: translateX(350%);
-  }
+  from { transform: translateX(-100%); }
+  to { transform: translateX(350%); }
 }
 
 /* Split layout */
@@ -665,33 +674,42 @@ body {
 /* Two-column auth layout: type selector on the left, fields on the right */
 .auth-layout {
   display: flex;
-  gap: var(--rf-space-4);
+  flex-direction: row;
   align-items: flex-start;
-  flex: 1;
-  min-height: 0;
+  gap: var(--rf-space-4);
+  width: 100%;
+  padding-top: var(--rf-space-2);
 }
 
 .auth-type-col {
   display: flex;
   flex-direction: column;
-  gap: var(--rf-space-2);
-  flex: 0 0 9rem;
-  min-width: 7.5rem;
-  max-width: 11rem;
+  gap: var(--rf-space-1);
+  flex: 0 0 170px;
+  min-width: 140px;
+  max-width: 220px;
+  padding-right: var(--rf-space-4);
+  border-right: 1px solid var(--rf-border);
 }
 
-.auth-type-label {
+.auth-type-label,
+.auth-field .text-label {
+  display: flex;
+  align-items: center;
+  height: 18px;
+  line-height: 18px;
   font-size: var(--rf-text-xs);
   font-weight: 600;
   color: var(--rf-muted);
   letter-spacing: 0.05em;
   text-transform: uppercase;
+  margin: 0 0 var(--rf-space-1);
 }
 
 .auth-type-select {
   width: 100%;
+  height: var(--rf-control-h);
   cursor: pointer;
-  font-weight: 500;
 }
 
 .auth-fields-col {
@@ -700,7 +718,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: var(--rf-space-3);
-  padding-top: var(--rf-space-1);
+  max-width: 440px;
 }
 
 .auth-empty-hint {
@@ -715,11 +733,12 @@ body {
   flex-direction: column;
   gap: var(--rf-space-1);
   align-items: stretch;
-  max-width: 32rem;
 }
 
 .auth-field .text-label {
-  font-weight: 600;
+  font-size: var(--rf-text-sm);
+  font-weight: 500;
+  color: var(--rf-fg);
 }
 
 .auth-field-hint {
@@ -729,37 +748,57 @@ body {
   line-height: 1.45;
 }
 
-/* Row that holds password input + reveal toggle */
-.auth-input-row {
+/* Container holding password / token input with reveal button inside */
+.auth-input-wrap {
+  position: relative;
   display: flex;
   align-items: center;
-  gap: var(--rf-space-1);
+  width: 100%;
 }
 
-.auth-input-row .rf-input {
-  flex: 1;
-  min-width: 0;
+.auth-input-wrap .rf-input {
+  width: 100%;
+  padding-right: 32px;
 }
 
 .auth-reveal-btn {
-  flex: 0 0 auto;
-  min-width: var(--rf-control-h);
-  min-height: var(--rf-control-h);
+  position: absolute;
+  right: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
   padding: 0;
-  font-size: 0.85rem;
-  line-height: 1;
-  opacity: 0.6;
-  transition: opacity 120ms ease;
+  border: none;
+  background: transparent;
+  color: var(--rf-muted);
+  cursor: pointer;
+  border-radius: var(--rf-radius-sm);
+  transition: color 120ms ease, background 120ms ease;
 }
 
 .auth-reveal-btn:hover {
-  opacity: 1;
+  color: var(--rf-fg);
+  background: color-mix(in srgb, var(--rf-fg) 12%, transparent);
 }
 
-/* Divider between type col and fields col */
-.auth-type-col+.auth-fields-col {
-  border-left: 1px solid var(--rf-border);
-  padding-left: var(--rf-space-4);
+.auth-reveal-btn svg {
+  display: block;
+}
+
+.autosave-spinner {
+  display: inline-block;
+  width: 0.75rem;
+  height: 0.75rem;
+  border: 1.5px solid var(--rf-muted);
+  border-top-color: var(--rf-fg);
+  border-radius: 50%;
+  animation: rf-spin 0.6s linear infinite;
+  margin-right: var(--rf-space-1);
+  vertical-align: -1px;
 }
 
 .rf-input-mono {
@@ -779,12 +818,6 @@ body {
 
 .body-type-row .segmented {
   margin-inline-start: var(--rf-space-1);
-}
-
-.auth-fields {
-  display: flex;
-  flex-direction: column;
-  gap: var(--rf-space-3);
 }
 
 /* Key-value tables */
@@ -818,6 +851,15 @@ body {
 .col-check {
   width: 2rem;
   text-align: center;
+}
+
+.kv-check {
+  display: block;
+  margin: 0 auto;
+  width: 14px;
+  height: 14px;
+  cursor: pointer;
+  accent-color: var(--vscode-focusBorder, #007acc);
 }
 
 .col-action {
@@ -1151,9 +1193,7 @@ body {
 }
 
 @keyframes rf-spin {
-  to {
-    transform: rotate(360deg);
-  }
+  to { transform: rotate(360deg); }
 }
 
 .error-card {
@@ -1254,5 +1294,20 @@ body {
 
   .col-action {
     width: 2rem;
+  }
+
+  .auth-layout {
+    flex-direction: column;
+    gap: var(--rf-space-3);
+  }
+
+  .auth-type-col {
+    flex: auto;
+    width: 100%;
+    max-width: 100%;
+    padding-right: 0;
+    border-right: none;
+    border-bottom: 1px solid var(--rf-border);
+    padding-bottom: var(--rf-space-3);
   }
 }

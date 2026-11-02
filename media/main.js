@@ -21453,10 +21453,21 @@
       auth: req.auth ?? { type: "none" }
     };
   }
-  function syncEditorsToRequest() {
+  function flushAllFields() {
     if (bodyEditor) {
       state.request.body.content = bodyEditor.state.doc.toString();
     }
+    const tokenInput = document.getElementById("auth-token");
+    if (tokenInput) state.request.auth.token = tokenInput.value;
+    const userInput = document.getElementById("auth-user");
+    if (userInput) state.request.auth.username = userInput.value;
+    const passInput = document.getElementById("auth-pass");
+    if (passInput) state.request.auth.password = passInput.value;
+    const urlInput = document.getElementById("url");
+    if (urlInput) state.request.url = urlInput.value;
+  }
+  function syncEditorsToRequest() {
+    flushAllFields();
   }
   function post(msg) {
     vscode.postMessage(msg);
@@ -21473,7 +21484,12 @@
       <div class="request-context">
         <span class="request-context-method" id="request-context-method" aria-hidden="true"></span>
         <span class="request-context-name" id="request-context-name"></span>
-        <button type="button" class="btn btn-ghost btn-sm new-request-btn" id="new-request" aria-label="New request" title="New request">+</button>
+        <button type="button" class="new-request-btn" id="new-request" aria-label="New request" title="New request">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <line x1="8" y1="2" x2="8" y2="14"></line>
+            <line x1="2" y1="8" x2="14" y2="8"></line>
+          </svg>
+        </button>
       </div>
       <div class="app-top-bar-actions">
         <span class="unsaved-label hidden" id="unsaved-label" role="status">Unsaved</span>
@@ -21624,10 +21640,18 @@
   function debouncedDraft() {
     clearTimeout(draftTimer);
     draftTimer = setTimeout(() => {
-      state.dirty = true;
-      post({ type: "saveDraft", request: state.request });
-      renderChrome();
-    }, 500);
+      saveDraftNow();
+    }, 400);
+  }
+  function saveDraftNow() {
+    if (draftTimer) {
+      clearTimeout(draftTimer);
+      draftTimer = void 0;
+    }
+    flushAllFields();
+    state.dirty = true;
+    post({ type: "saveDraft", request: state.request });
+    renderChrome();
   }
   function syncMethodSelect() {
     const sel = document.getElementById("method");
@@ -21734,7 +21758,7 @@
     ).join("");
     tabs.querySelectorAll("button").forEach((btn) => {
       btn.addEventListener("click", () => {
-        if (state.builderTab === "auth") flushAuthFields();
+        saveDraftNow();
         state.builderTab = btn.dataset.tab;
         renderBuilderPanel();
         renderBuilderTabs();
@@ -21854,6 +21878,7 @@
     panel.querySelector(`[data-add="${field}"]`)?.addEventListener("click", () => {
       state.request[field] = [...read(), emptyRow()];
       renderBuilderPanel();
+      debouncedDraft();
     });
     table.querySelectorAll(".btn-remove").forEach((btn) => {
       btn.addEventListener("click", () => {
@@ -21861,6 +21886,7 @@
         const rows = read().filter((_, i) => i !== idx);
         state.request[field] = rows.length ? rows : [emptyRow()];
         renderBuilderPanel();
+        debouncedDraft();
       });
     });
   }
@@ -21925,8 +21951,20 @@
           state.variableKeys,
           onChange
         );
-        document.getElementById("fmt-json")?.addEventListener("click", () => bodyEditor && formatJson(bodyEditor));
-        document.getElementById("min-json")?.addEventListener("click", () => bodyEditor && minifyJson(bodyEditor));
+        document.getElementById("fmt-json")?.addEventListener("click", () => {
+          if (bodyEditor) {
+            formatJson(bodyEditor);
+            state.request.body.content = bodyEditor.state.doc.toString();
+            debouncedDraft();
+          }
+        });
+        document.getElementById("min-json")?.addEventListener("click", () => {
+          if (bodyEditor) {
+            minifyJson(bodyEditor);
+            state.request.body.content = bodyEditor.state.doc.toString();
+            debouncedDraft();
+          }
+        });
       } else {
         bodyEditor = createTextEditor(
           host,
@@ -21959,6 +21997,7 @@
     host.querySelector('[data-add="form"]')?.addEventListener("click", () => {
       state.request.body.form = [...read(), emptyRow()];
       renderBuilderPanel();
+      debouncedDraft();
     });
     table.querySelectorAll(".btn-remove").forEach((btn) => {
       btn.addEventListener("click", () => {
@@ -21966,14 +22005,17 @@
         const rows = read().filter((_, i) => i !== idx);
         state.request.body.form = rows.length ? rows : [emptyRow()];
         renderBuilderPanel();
+        debouncedDraft();
       });
     });
   }
+  var EYE_ICON_SVG = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>`;
+  var EYE_OFF_ICON_SVG = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/></svg>`;
   function authPanelHtml() {
     const a = state.request.auth;
     const authTypes = ["none", "bearer", "basic"];
     const authLabels = {
-      none: "None",
+      none: "No Auth",
       bearer: "Bearer Token",
       basic: "Basic Auth"
     };
@@ -21985,11 +22027,11 @@
         return `
         <div class="auth-field">
           <label class="text-label" for="auth-token">Token</label>
-          <div class="auth-input-row">
+          <div class="auth-input-wrap">
             <input type="password" class="rf-input rf-input-sm rf-input-mono" id="auth-token"
-              value="${escAttr(a.token ?? "")}" placeholder="{{token}}" autocomplete="off" />
-            <button type="button" class="btn btn-ghost btn-sm auth-reveal-btn" id="auth-reveal"
-              aria-label="Show / hide token" title="Show / hide">\u{1F441}</button>
+              value="${escAttr(a.token ?? "")}" placeholder="Token or {{token}}" autocomplete="off" spellcheck="false" />
+            <button type="button" class="auth-reveal-btn" id="auth-reveal"
+              aria-label="Show token" title="Show token">${EYE_ICON_SVG}</button>
           </div>
           <p class="auth-field-hint">Sent as <code class="auth-code">Authorization: Bearer \u2026</code></p>
         </div>`;
@@ -21999,15 +22041,15 @@
         <div class="auth-field">
           <label class="text-label" for="auth-user">Username</label>
           <input type="text" class="rf-input rf-input-sm" id="auth-user"
-            value="${escAttr(a.username ?? "")}" autocomplete="off" />
+            value="${escAttr(a.username ?? "")}" placeholder="Username" autocomplete="off" spellcheck="false" />
         </div>
         <div class="auth-field">
           <label class="text-label" for="auth-pass">Password</label>
-          <div class="auth-input-row">
+          <div class="auth-input-wrap">
             <input type="password" class="rf-input rf-input-sm" id="auth-pass"
-              value="${escAttr(a.password ?? "")}" autocomplete="off" />
-            <button type="button" class="btn btn-ghost btn-sm auth-reveal-btn" id="auth-reveal-pass"
-              aria-label="Show / hide password" title="Show / hide">\u{1F441}</button>
+              value="${escAttr(a.password ?? "")}" placeholder="Password" autocomplete="off" spellcheck="false" />
+            <button type="button" class="auth-reveal-btn" id="auth-reveal-pass"
+              aria-label="Show password" title="Show password">${EYE_ICON_SVG}</button>
           </div>
           <p class="auth-field-hint">Sent as <code class="auth-code">Authorization: Basic \u2026</code></p>
         </div>`;
@@ -22030,12 +22072,26 @@
     </div>
   `;
   }
+  function setupPasswordToggle(inputId, buttonId, itemName) {
+    const input = document.getElementById(inputId);
+    const btn = document.getElementById(buttonId);
+    if (!input || !btn) return;
+    btn.addEventListener("click", () => {
+      const isPass = input.type === "password";
+      input.type = isPass ? "text" : "password";
+      btn.innerHTML = isPass ? EYE_OFF_ICON_SVG : EYE_ICON_SVG;
+      const label = isPass ? `Hide ${itemName}` : `Show ${itemName}`;
+      btn.setAttribute("aria-label", label);
+      btn.title = label;
+      input.focus();
+    });
+  }
   function bindAuthPanel() {
     const typeSelect = document.getElementById("auth-type-select");
     typeSelect?.addEventListener("change", () => {
       const next = typeSelect.value;
       if (state.request.auth.type === next) return;
-      flushAuthFields();
+      flushAllFields();
       state.request.auth.type = next;
       renderBuilderPanel();
       debouncedDraft();
@@ -22045,41 +22101,42 @@
       state.request.auth.token = tokenInput.value;
       debouncedDraft();
     });
+    tokenInput?.addEventListener("change", () => {
+      state.request.auth.token = tokenInput.value;
+      debouncedDraft();
+    });
     tokenInput?.addEventListener("blur", () => {
       state.request.auth.token = tokenInput.value;
-    });
-    document.getElementById("auth-reveal")?.addEventListener("click", () => {
-      if (!tokenInput) return;
-      tokenInput.type = tokenInput.type === "password" ? "text" : "password";
+      saveDraftNow();
     });
     const userInput = document.getElementById("auth-user");
     userInput?.addEventListener("input", () => {
       state.request.auth.username = userInput.value;
       debouncedDraft();
     });
+    userInput?.addEventListener("change", () => {
+      state.request.auth.username = userInput.value;
+      debouncedDraft();
+    });
     userInput?.addEventListener("blur", () => {
       state.request.auth.username = userInput.value;
+      saveDraftNow();
     });
     const passInput = document.getElementById("auth-pass");
     passInput?.addEventListener("input", () => {
       state.request.auth.password = passInput.value;
       debouncedDraft();
     });
+    passInput?.addEventListener("change", () => {
+      state.request.auth.password = passInput.value;
+      debouncedDraft();
+    });
     passInput?.addEventListener("blur", () => {
       state.request.auth.password = passInput.value;
+      saveDraftNow();
     });
-    document.getElementById("auth-reveal-pass")?.addEventListener("click", () => {
-      if (!passInput) return;
-      passInput.type = passInput.type === "password" ? "text" : "password";
-    });
-  }
-  function flushAuthFields() {
-    const tokenInput = document.getElementById("auth-token");
-    if (tokenInput) state.request.auth.token = tokenInput.value;
-    const userInput = document.getElementById("auth-user");
-    if (userInput) state.request.auth.username = userInput.value;
-    const passInput = document.getElementById("auth-pass");
-    if (passInput) state.request.auth.password = passInput.value;
+    setupPasswordToggle("auth-token", "auth-reveal", "token");
+    setupPasswordToggle("auth-pass", "auth-reveal-pass", "password");
   }
   function pasteBulkHeaders() {
     void navigator.clipboard.readText().then((text) => {
@@ -22368,5 +22425,13 @@
   post({ type: "ready" });
   mountShell();
   renderAll();
+  window.addEventListener("blur", () => {
+    if (state.dirty) {
+      saveDraftNow();
+    }
+  });
+  window.addEventListener("beforeunload", () => {
+    saveDraftNow();
+  });
 })();
 //# sourceMappingURL=main.js.map
