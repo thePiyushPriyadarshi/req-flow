@@ -21436,7 +21436,7 @@
       url: "{{baseUrl}}/get",
       params: [],
       headers: [],
-      body: { type: "none", content: "", form: [] },
+      body: { type: "json", content: "", form: [] },
       auth: { type: "none" }
     };
   }
