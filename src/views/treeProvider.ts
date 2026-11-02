@@ -28,7 +28,7 @@ export function createDefaultRequest(name = "Untitled request"): ApiRequest {
     url: "{{baseUrl}}/get",
     params: [],
     headers: [],
-    body: { type: "none", content: "", form: [] },
+    body: { type: "json", content: "", form: [] },
     auth: { type: "none" },
   };
 }
