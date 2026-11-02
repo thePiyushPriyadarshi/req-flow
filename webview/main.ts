@@ -883,7 +883,7 @@ function renderResponse(): void {
     section.innerHTML = `
       <div class="loading-state" role="status">
         <span class="spinner" aria-hidden="true"></span>
-        <span>Sending request…</span>
+        <span>Waiting for response…</span>
       </div>`;
     return;
   }

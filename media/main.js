@@ -22168,7 +22168,7 @@
       section.innerHTML = `
       <div class="loading-state" role="status">
         <span class="spinner" aria-hidden="true"></span>
-        <span>Sending request\u2026</span>
+        <span>Waiting for response\u2026</span>
       </div>`;
       return;
     }

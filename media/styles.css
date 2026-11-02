@@ -1168,6 +1168,7 @@ body {
 
 .loading-state {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: var(--rf-space-2);
@@ -1177,18 +1178,13 @@ body {
 }
 
 .spinner {
+  flex: 0 0 auto;
   width: 1rem;
   height: 1rem;
-  border: 2px solid var(--rf-muted);
-  border-top-color: var(--rf-btn-bg);
+  border: 2px solid var(--rf-border);
+  border-top-color: var(--vscode-focusBorder, var(--rf-fg));
   border-radius: 50%;
   animation: rf-spin 0.8s linear infinite;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .spinner {
-    animation: none;
-  }
 }
 
 @keyframes rf-spin {
